@@ -1,9 +1,38 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Light theme colors */
+    --bg-primary: 255 255 255;
+    --bg-secondary: 249 250 251;
+    --bg-tertiary: 243 244 246;
+    --text-primary: 17 24 39;
+    --text-secondary: 75 85 99;
+    --border-color: 229 231 235;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --bg-primary: 17 24 39;
+    --bg-secondary: 31 41 55;
+    --bg-tertiary: 55 65 81;
+    --text-primary: 243 244 246;
+    --text-secondary: 156 163 175;
+    --border-color: 55 65 81;
+  }
+}
+
 body {
-  @apply bg-gray-900 text-gray-100;
+  @apply transition-colors duration-200;
+  background-color: rgb(var(--bg-primary));
+  color: rgb(var(--text-primary));
 }
 
 /* Custom scrollbar */
@@ -12,13 +41,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-800;
+  background-color: rgb(var(--bg-secondary));
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-600 rounded-full;
+  @apply rounded-full;
+  background-color: rgb(var(--bg-tertiary));
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500;
+  @apply opacity-80;
 }
