@@ -26,8 +26,7 @@ export function IconButton({
     // If user passed a specific size like 'sm' but wants an icon button (square),
     // Shadcn Button with size='sm' is NOT square (it has px-3). 
     // We should force square dimensions if we want a true icon button, or use size="icon" and scale via className.
-    // For simplicity, let's trust size="icon" is mostly what we want, or map:
-    const buttonSize = size === "sm" || size === "lg" || size === "default" || size === "icon" ? "icon" : "icon"
+    // For simplicity, let's trust size="icon" is mostly what we want.
     
     const sizeClasses = {
         sm: "h-8 w-8",
