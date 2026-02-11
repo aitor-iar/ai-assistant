@@ -205,10 +205,10 @@ function App() {
   };
 
   const suggestions = [
-    "Explain quantum computing in simple terms",
-    "Write a Python function to sort a list",
-    "What are the best practices for React development?",
-    "What is the weather in Tokyo?",
+    "Explica la computación cuántica en términos simples",
+    "Escribe una función en Python para ordenar una lista",
+    "¿Cuáles son las mejores prácticas para el desarrollo en React?",
+    "¿Cuál es el clima en Tokio?",
   ];
 
   return (
@@ -233,7 +233,7 @@ function App() {
         {/* Header */}
         <div className="bg-white dark:bg-gray-900 px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-3">
           <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-            AI Assistant
+            Assistant AI
           </h1>
         </div>
 
@@ -250,10 +250,10 @@ function App() {
                       <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary-600 dark:text-primary-400" />
                     </div>
                     <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                      Start a conversation
+                      Inicia una conversación
                     </h2>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 sm:mb-8">
-                      Type a message below or try one of these suggestions
+                      Escribe un mensaje abajo o prueba una de estas sugerencias
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                       {suggestions.map((suggestion, index) => (

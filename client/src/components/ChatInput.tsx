@@ -103,7 +103,7 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
+            placeholder="Escribe tu mensaje..."
             disabled={disabled}
             rows={1}
             className="flex-1 resize-none bg-transparent py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50 min-h-[44px]"
@@ -124,8 +124,8 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
                     ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
                     : "text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
                 }`}
-                aria-label={mode === "search" ? "Switch to chat mode" : "Switch to search mode"}
-                title={mode === "search" ? "Chat mode" : "Search mode"}
+                aria-label={mode === "search" ? "Cambiar a modo chat" : "Cambiar a modo búsqueda"}
+                title={mode === "search" ? "Modo chat" : "Modo búsqueda"}
               >
                 <Search size={20} />
               </button>
@@ -146,7 +146,8 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
                   onClick={handleImageButtonClick}
                   disabled={disabled}
                   className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors disabled:opacity-50 flex-shrink-0"
-                  aria-label="Add image"
+                  aria-label="Añadir imagen"
+                  title="Añadir imagen"
                 >
                   <Image size={20} />
                 </button>
