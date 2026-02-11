@@ -89,7 +89,39 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
         <div className="flex gap-2 items-end">
           {/* Main input area with integrated icons */}
           <div className="flex-1 flex items-center gap-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-primary-500 dark:focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500/20 transition-all duration-200">
-            {/* Image Upload Icon - Inside left */}
+            {/* Text input */}
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message..."
+              disabled={disabled}
+              rows={1}
+              className="flex-1 resize-none bg-transparent py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50 min-h-[44px]"
+              style={{ 
+                maxHeight: '200px',
+                overflowY: input.split('\n').length > 3 ? 'auto' : 'hidden'
+              }}
+            />
+            
+            {/* Search Mode Toggle - Right side, before image button */}
+            {onModeChange && (
+              <button
+                onClick={() => onModeChange(mode === "chat" ? "search" : "chat")}
+                disabled={disabled}
+                className={`p-2 rounded-lg transition-all flex-shrink-0 ${
+                  mode === "search"
+                    ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
+                    : "text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
+                }`}
+                aria-label={mode === "search" ? "Switch to chat mode" : "Switch to search mode"}
+                title={mode === "search" ? "Chat mode" : "Search mode"}
+              >
+                <Search size={20} />
+              </button>
+            )}
+            
+            {/* Image Upload Icon - Right side, after search button */}
             {showImageUpload && (
               <>
                 <input
@@ -109,38 +141,6 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
                   <Image size={20} />
                 </button>
               </>
-            )}
-            
-            {/* Text input */}
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type your message..."
-              disabled={disabled}
-              rows={1}
-              className="flex-1 resize-none bg-transparent py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50 min-h-[44px]"
-              style={{ 
-                maxHeight: '200px',
-                overflowY: input.split('\n').length > 3 ? 'auto' : 'hidden'
-              }}
-            />
-            
-            {/* Search Mode Toggle - Inside right (before send button) */}
-            {onModeChange && (
-              <button
-                onClick={() => onModeChange(mode === "chat" ? "search" : "chat")}
-                disabled={disabled}
-                className={`p-2 rounded-lg transition-all flex-shrink-0 ${
-                  mode === "search"
-                    ? "bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400"
-                    : "text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"
-                }`}
-                aria-label={mode === "search" ? "Switch to chat mode" : "Switch to search mode"}
-                title={mode === "search" ? "Chat mode" : "Search mode"}
-              >
-                <Search size={20} />
-              </button>
             )}
           </div>
 

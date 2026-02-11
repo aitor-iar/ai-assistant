@@ -34,8 +34,8 @@ export function Sidebar({
         />
       )}
 
-      {/* Hamburger Menu Button - Top Right */}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+      {/* Hamburger Menu Button - Top Left */}
+      <div className="fixed top-4 left-4 z-50 flex flex-col gap-2">
         <Button
           onClick={toggleSidebar}
           variant="ghost"
@@ -62,8 +62,8 @@ export function Sidebar({
 
       {/* Sidebar Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         style={{ zIndex: 45 }}
       >

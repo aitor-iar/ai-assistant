@@ -175,61 +175,59 @@ function App() {
         onNewConversation={handleNewConversation}
       />
 
-      {mode === "search" ? (
-        <div className="flex-1 overflow-y-auto">
+      {/* Main content area */}
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+        {mode === "search" ? (
           <SemanticSearch />
-        </div>
-      ) : (
-        <>
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
-            <div className="mx-auto max-w-4xl">
-              {messages.length === 0 ? (
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center max-w-2xl px-3 sm:px-4">
-                    <div className="mb-4 sm:mb-6 inline-flex p-3 sm:p-4 rounded-full bg-gradient-to-br from-primary-500/10 to-accent-500/10">
-                      <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary-600 dark:text-primary-400" />
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                      Start a conversation
-                    </h2>
-                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 sm:mb-8">
-                      Type a message below or try one of these suggestions
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                      {suggestions.map((suggestion, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSuggestionClick(suggestion)}
-                          className="p-3 sm:p-4 text-left rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-md transition-all duration-200 group"
-                        >
-                          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                            {suggestion}
-                          </p>
-                        </button>
-                      ))}
-                    </div>
+        ) : (
+          <div className="mx-auto max-w-4xl">
+            {messages.length === 0 ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-center max-w-2xl px-3 sm:px-4">
+                  <div className="mb-4 sm:mb-6 inline-flex p-3 sm:p-4 rounded-full bg-gradient-to-br from-primary-500/10 to-accent-500/10">
+                    <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary-600 dark:text-primary-400" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                    Start a conversation
+                  </h2>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-6 sm:mb-8">
+                    Type a message below or try one of these suggestions
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                    {suggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="p-3 sm:p-4 text-left rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-500 dark:hover:border-primary-400 hover:shadow-md transition-all duration-200 group"
+                      >
+                        <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                          {suggestion}
+                        </p>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-3 sm:space-y-4">
-                  {messages.map((message) => (
-                    <ChatMessage key={message.id} message={message} theme={theme} />
-                  ))}
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-3 sm:space-y-4">
+                {messages.map((message) => (
+                  <ChatMessage key={message.id} message={message} theme={theme} />
+                ))}
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
+        )}
+      </div>
 
-          <ChatInput 
-            onSend={handleSendMessage} 
-            disabled={isLoading} 
-            showImageUpload={mode === "chat"}
-            mode={mode}
-            onModeChange={setMode}
-          />
-        </>
-      )}
+      {/* Chat Input - always visible */}
+      <ChatInput 
+        onSend={handleSendMessage} 
+        disabled={isLoading} 
+        showImageUpload={mode === "chat"}
+        mode={mode}
+        onModeChange={setMode}
+      />
     </div>
   );
 }
