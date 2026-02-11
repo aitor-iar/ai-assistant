@@ -1,6 +1,5 @@
 import { useState, KeyboardEvent, useRef } from "react";
-import { Send, Loader2, Image, X, Search } from "lucide-react";
-import { Button } from "./ui/Button";
+import { Loader2, Image, X, Search } from "lucide-react";
 import { AppMode } from "../types";
 
 interface Props {
@@ -16,9 +15,11 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = () => {
-    if (input.trim() && !disabled) {
+    // Permitir enviar si hay texto o una imagen seleccionada
+    if ((input.trim() || imageBase64) && !disabled) {
       onSend(input.trim(), imageBase64 || undefined);
       setInput("");
       setImagePreview(null);
@@ -29,7 +30,9 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      if (imageBase64 || input.trim()) {
+        handleSubmit();
+      }
     }
   };
 
@@ -54,6 +57,8 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
       const base64String = reader.result as string;
       setImagePreview(base64String);
       setImageBase64(base64String);
+      // Return focus to textarea after selecting image
+      setTimeout(() => textareaRef.current?.focus(), 0);
     };
     reader.readAsDataURL(file);
   };
@@ -66,8 +71,14 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
     }
   };
 
+  const handleImageButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
-    <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 sm:p-4">
+    <div className="bg-white dark:bg-gray-900 p-3 sm:p-4">
       <div className="max-w-4xl mx-auto">
         {imagePreview && (
           <div className="mb-2 sm:mb-3 relative inline-block">
@@ -77,6 +88,7 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
               className="max-h-32 rounded-lg border border-gray-300 dark:border-gray-600"
             />
             <button
+              type="button"
               onClick={handleRemoveImage}
               className="absolute -top-2 -right-2 p-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg min-w-[32px] min-h-[32px] flex items-center justify-center"
             >
@@ -84,29 +96,27 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
             </button>
           </div>
         )}
-        
-        {/* Input container with integrated icons - Gemini style */}
-        <div className="flex gap-2 items-end">
-          {/* Main input area with integrated icons */}
-          <div className="flex-1 flex items-center gap-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-primary-500 dark:focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500/20 transition-all duration-200">
-            {/* Text input */}
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type your message..."
-              disabled={disabled}
-              rows={1}
-              className="flex-1 resize-none bg-transparent py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50 min-h-[44px]"
-              style={{ 
-                maxHeight: '200px',
-                overflowY: input.split('\n').length > 3 ? 'auto' : 'hidden'
-              }}
-            />
-            
-            {/* Search Mode Toggle - Right side, before image button */}
+
+        <div className="flex flex-col rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 shadow-sm hover:shadow-md focus-within:shadow-md focus-within:border-primary-500 dark:focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-500/20 transition-all duration-200">
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+            disabled={disabled}
+            rows={1}
+            className="flex-1 resize-none bg-transparent py-2.5 text-sm sm:text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none disabled:opacity-50 min-h-[44px]"
+            style={{
+              maxHeight: "200px",
+              overflowY: input.split("\n").length > 3 ? "auto" : "hidden",
+            }}
+          />
+
+          <div className="flex items-center gap-1 pb-2">
             {onModeChange && (
               <button
+                type="button"
                 onClick={() => onModeChange(mode === "chat" ? "search" : "chat")}
                 disabled={disabled}
                 className={`p-2 rounded-lg transition-all flex-shrink-0 ${
@@ -120,8 +130,7 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
                 <Search size={20} />
               </button>
             )}
-            
-            {/* Image Upload Icon - Right side, after search button */}
+
             {showImageUpload && (
               <>
                 <input
@@ -133,7 +142,8 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
                   disabled={disabled}
                 />
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  type="button"
+                  onClick={handleImageButtonClick}
                   disabled={disabled}
                   className="p-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors disabled:opacity-50 flex-shrink-0"
                   aria-label="Add image"
@@ -143,19 +153,6 @@ export function ChatInput({ onSend, disabled, showImageUpload = false, mode = "c
               </>
             )}
           </div>
-
-          {/* Send Button - Outside, at the end */}
-          <Button
-            onClick={handleSubmit}
-            disabled={disabled || !input.trim()}
-            className="rounded-xl min-w-[44px] min-h-[44px] h-[44px] px-3 sm:px-4 flex items-center justify-center flex-shrink-0"
-          >
-            {disabled ? (
-              <Loader2 className="animate-spin h-5 w-5" />
-            ) : (
-              <Send className="h-5 w-5" />
-            )}
-          </Button>
         </div>
       </div>
     </div>
