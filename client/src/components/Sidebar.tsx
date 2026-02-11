@@ -26,6 +26,14 @@ export function Sidebar({
 
   return (
     <>
+      {/* Sidebar Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+          onClick={closeSidebar}
+        />
+      )}
+
       {/* Hamburger Menu Button - Top Right */}
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
         <Button
@@ -52,19 +60,12 @@ export function Sidebar({
         )}
       </div>
 
-      {/* Sidebar Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 transition-opacity"
-          onClick={closeSidebar}
-        />
-      )}
-
       {/* Sidebar Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 z-40 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 z-45 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
+        style={{ zIndex: 45 }}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
