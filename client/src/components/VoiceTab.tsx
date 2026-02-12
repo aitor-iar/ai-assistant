@@ -190,8 +190,7 @@ export function VoiceTab() {
               <audio
                 ref={audioRef}
                 controls
-                className="w-full mt-4"
-                style={{ display: audioRef.current?.src ? 'block' : 'none' }}
+                className={`w-full mt-4 ${audioRef.current?.src ? '' : 'hidden'}`}
               />
             </div>
           )}

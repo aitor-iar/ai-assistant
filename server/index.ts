@@ -1,4 +1,4 @@
-const elevenLabs = require("elevenlabs-js");
+import elevenLabs from "elevenlabs-js";
 
 const PORT = 3002;
 
@@ -133,12 +133,13 @@ const server = Bun.serve({
           );
         }
 
-        // For the @elevenlabs/react SDK, we need to provide configuration
-        // The SDK handles the connection to the conversational AI
+        // For the @elevenlabs/react SDK, we return the agent ID
+        // In production, implement proper token-based authentication
+        // instead of exposing API keys to the client
         return new Response(
           JSON.stringify({
             agentId,
-            apiKey: ELEVENLABS_API_KEY, // Note: In production, use a more secure method
+            // TODO: Implement secure token generation instead of exposing API key
           }),
           {
             headers: {

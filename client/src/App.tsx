@@ -381,7 +381,7 @@ function App() {
           )}
         </div>
 
-        {/* Chat Input - Solo visible cuando NO estamos en búsqueda de conversaciones ni en modo voice */}
+        {/* Chat Input - Only visible when NOT in search view or voice mode */}
         {!showSearchView && mode !== "voice" && (
           <ChatInput 
             onSend={handleSendMessage}
