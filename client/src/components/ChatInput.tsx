@@ -1,5 +1,5 @@
 import { useState, KeyboardEvent, useRef } from "react";
-import { Loader2, Image, X, Search, Send } from "lucide-react";
+import { Image, X, Search } from "lucide-react";
 import { AppMode } from "../types";
 
 interface Props {

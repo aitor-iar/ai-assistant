@@ -1,4 +1,4 @@
-import { ElevenLabsClient } from "elevenlabs-js";
+const elevenLabs = require("elevenlabs-js");
 
 const PORT = 3002;
 
@@ -6,11 +6,10 @@ const PORT = 3002;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 if (!ELEVENLABS_API_KEY) {
   console.warn("[!] WARNING: ELEVENLABS_API_KEY not found in environment variables");
+} else {
+  elevenLabs.setApiKey(ELEVENLABS_API_KEY);
+  console.log("[OK] ElevenLabs API Key configured");
 }
-
-const client = new ElevenLabsClient({
-  apiKey: ELEVENLABS_API_KEY,
-});
 
 const server = Bun.serve({
   port: PORT,
@@ -33,14 +32,14 @@ const server = Bun.serve({
     // GET /api/voices - Fetch available voices
     if (path === "/api/voices" && req.method === "GET") {
       try {
-        const voices = await client.voices.getAll();
+        const voicesData = await elevenLabs.getVoices();
         
         // Simplify the response
-        const simplifiedVoices = voices.voices.map((voice: any) => ({
+        const simplifiedVoices = voicesData.voices.map((voice: any) => ({
           id: voice.voice_id,
           name: voice.name,
-          category: voice.category,
-          preview_url: voice.preview_url,
+          category: voice.category || "general",
+          preview_url: voice.preview_url || "",
         }));
 
         return new Response(JSON.stringify(simplifiedVoices), {
@@ -83,19 +82,22 @@ const server = Bun.serve({
           );
         }
 
-        // Stream audio from ElevenLabs
-        const audioStream = await client.textToSpeech.convert(voiceId, {
+        // Generate audio stream from ElevenLabs
+        const audioStream = await elevenLabs.textToSpeech(
+          voiceId,
           text,
-          model_id: "eleven_monolingual_v1",
-          output_format: "mp3_44100_128",
-        });
+          "eleven_monolingual_v1",
+          {
+            stability: 0.95,
+            similarity_boost: 0.75,
+          }
+        );
 
         // Return the stream directly to the client
         return new Response(audioStream as any, {
           headers: {
             ...corsHeaders,
             "Content-Type": "audio/mpeg",
-            "Transfer-Encoding": "chunked",
           },
         });
       } catch (error: any) {
@@ -131,14 +133,12 @@ const server = Bun.serve({
           );
         }
 
-        // For the @11labs/react SDK, we need to provide a signed URL
-        // The SDK typically uses the agent ID and API key directly
-        // We'll return the agent ID and let the frontend handle connection
-        // In production, you'd want to generate a temporary token here
+        // For the @elevenlabs/react SDK, we need to provide configuration
+        // The SDK handles the connection to the conversational AI
         return new Response(
           JSON.stringify({
             agentId,
-            // The frontend will use the conversation hook which handles authentication
+            apiKey: ELEVENLABS_API_KEY, // Note: In production, use a more secure method
           }),
           {
             headers: {

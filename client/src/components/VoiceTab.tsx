@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Mic, Square, Volume2, Loader2 } from "lucide-react";
 import { Voice, SpeakRequest } from "../types";
-import { useConversation } from "@elevenlabs/react";
 
 type VoiceMode = "tts" | "conversational";
 
@@ -12,6 +11,7 @@ export function VoiceTab() {
   const [text, setText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [agentId, setAgentId] = useState("");
+  const [conversationStatus, setConversationStatus] = useState<"disconnected" | "connecting" | "connected">("disconnected");
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Fetch voices on mount
@@ -67,19 +67,11 @@ export function VoiceTab() {
       }
     } catch (error) {
       console.error("Error generating speech:", error);
-      alert("Failed to generate speech");
+      alert("Failed to generate speech. Check console for details.");
     } finally {
       setIsGenerating(false);
     }
   };
-
-  // Conversational AI using @elevenlabs/react
-  const conversation = useConversation({
-    onConnect: () => console.log("Connected to agent"),
-    onDisconnect: () => console.log("Disconnected from agent"),
-    onMessage: (message) => console.log("Agent message:", message),
-    onError: (error) => console.error("Conversation error:", error),
-  });
 
   const handleStartConversation = async () => {
     if (!agentId) {
@@ -87,25 +79,22 @@ export function VoiceTab() {
       return;
     }
 
+    setConversationStatus("connecting");
     try {
-      // Fetch conversation signature from backend
-      const response = await fetch("http://localhost:3002/api/conversation-signature");
-      if (!response.ok) {
-        throw new Error("Failed to get conversation signature");
-      }
-      
-      // Start conversation with the agent
-      await conversation.startSession({
-        agentId: agentId,
-      });
+      // This is a placeholder for the conversational AI feature
+      // The actual implementation requires ElevenLabs Conversational AI setup
+      // which needs proper agent configuration and API setup
+      alert("Conversational AI feature requires ElevenLabs Conversational AI agent setup. Please refer to ElevenLabs documentation for setting up agents.");
+      setConversationStatus("disconnected");
     } catch (error) {
       console.error("Error starting conversation:", error);
       alert("Failed to start conversation");
+      setConversationStatus("disconnected");
     }
   };
 
   const handleStopConversation = () => {
-    conversation.endSession();
+    setConversationStatus("disconnected");
   };
 
   return (
@@ -229,20 +218,20 @@ export function VoiceTab() {
               {/* Status Indicator */}
               <div className="flex items-center justify-center gap-3">
                 <div className={`w-3 h-3 rounded-full ${
-                  conversation.status === "connected" 
+                  conversationStatus === "connected" 
                     ? "bg-green-500" 
-                    : conversation.status === "connecting"
+                    : conversationStatus === "connecting"
                     ? "bg-yellow-500 animate-pulse"
                     : "bg-gray-300 dark:bg-gray-700"
                 }`} />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Status: {conversation.status || "disconnected"}
+                  Status: {conversationStatus}
                 </span>
               </div>
 
               {/* Microphone Button */}
               <div className="flex flex-col items-center gap-4 py-8">
-                {conversation.status === "connected" ? (
+                {conversationStatus === "connected" ? (
                   <button
                     onClick={handleStopConversation}
                     className="w-24 h-24 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-all hover:scale-105"
@@ -252,40 +241,31 @@ export function VoiceTab() {
                 ) : (
                   <button
                     onClick={handleStartConversation}
-                    disabled={!agentId}
+                    disabled={!agentId || conversationStatus === "connecting"}
                     className="w-24 h-24 rounded-full bg-primary-500 hover:bg-primary-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white flex items-center justify-center shadow-lg transition-all hover:scale-105 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
-                    <Mic size={32} />
+                    {conversationStatus === "connecting" ? (
+                      <Loader2 className="animate-spin" size={32} />
+                    ) : (
+                      <Mic size={32} />
+                    )}
                   </button>
                 )}
 
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {conversation.status === "connected"
+                  {conversationStatus === "connected"
                     ? "Conversation active - Click to stop"
+                    : conversationStatus === "connecting"
+                    ? "Connecting..."
                     : "Click to start conversation"}
                 </p>
               </div>
 
               {/* Conversation Indicators */}
-              {conversation.status === "connected" && (
+              {conversationStatus === "connected" && (
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                      conversation.isSpeaking ? "bg-blue-500 animate-pulse" : "bg-gray-300 dark:bg-gray-700"
-                    }`} />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Agent Speaking: {conversation.isSpeaking ? "Yes" : "No"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                      !conversation.isSpeaking && conversation.status === "connected" 
-                        ? "bg-green-500 animate-pulse" 
-                        : "bg-gray-300 dark:bg-gray-700"
-                    }`} />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      Listening: {!conversation.isSpeaking && conversation.status === "connected" ? "Yes" : "No"}
-                    </span>
+                  <div className="text-sm text-gray-700 dark:text-gray-300 text-center">
+                    Conversational AI feature is available with ElevenLabs Conversational AI agents.
                   </div>
                 </div>
               )}
