@@ -5,11 +5,12 @@
     "dev": "uvicorn main:app --reload --port 3001",
     "dev:voice": "bun run index.ts",
     "start": "uvicorn main:app --port 3001",
-    "start:voice": "bun run index.ts",
-    "install": "pip install -r requirements.txt"
+    "start:voice": "bun run index.ts"
   },
   "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.35.0",
     "@types/node": "^25.2.3",
+    "dotenv": "^17.2.4",
     "elevenlabs-js": "^1.2.6"
   },
   "devDependencies": {

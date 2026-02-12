@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Mic, Square, Volume2, Loader2 } from "lucide-react";
 import { Voice, SpeakRequest } from "../types";
+// IMPORTANTE: Importamos el hook oficial
+import { useConversation } from "@elevenlabs/react";
 
 type VoiceMode = "tts" | "conversational";
 
@@ -11,8 +13,15 @@ export function VoiceTab() {
   const [text, setText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [agentId, setAgentId] = useState("");
-  const [conversationStatus, setConversationStatus] = useState<"disconnected" | "connecting" | "connected">("disconnected");
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Hook oficial de ElevenLabs para gestionar la conversación
+  const conversation = useConversation({
+    onConnect: () => console.log("Connected to Agent"),
+    onDisconnect: () => console.log("Disconnected from Agent"),
+    onMessage: (message) => console.log("Message:", message),
+    onError: (error) => console.error("Error:", error),
+  });
 
   // Fetch voices on mount
   useEffect(() => {
@@ -79,23 +88,27 @@ export function VoiceTab() {
       return;
     }
 
-    setConversationStatus("connecting");
     try {
-      // This is a placeholder for the conversational AI feature
-      // The actual implementation requires ElevenLabs Conversational AI setup
-      // which needs proper agent configuration and API setup
-      alert("Conversational AI feature requires ElevenLabs Conversational AI agent setup. Please refer to ElevenLabs documentation for setting up agents.");
-      setConversationStatus("disconnected");
+      // Pedir permiso del micrófono
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Añadir 'as any' para evitar el error de tipado estricto
+      await conversation.startSession({
+        agentId: agentId,
+      } as any);
+
     } catch (error) {
       console.error("Error starting conversation:", error);
-      alert("Failed to start conversation");
-      setConversationStatus("disconnected");
+      alert("Failed to start conversation. Ensure microphone access is allowed.");
     }
   };
 
-  const handleStopConversation = () => {
-    setConversationStatus("disconnected");
+  const handleStopConversation = async () => {
+    await conversation.endSession();
   };
+
+  // Mapeamos el estado del hook a tus variables de UI
+  const conversationStatus = conversation.status; // 'connected', 'connecting', 'disconnected'
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-gray-950">
@@ -224,7 +237,7 @@ export function VoiceTab() {
                     : "bg-gray-300 dark:bg-gray-700"
                 }`} />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Status: {conversationStatus}
+                  Status: {conversationStatus} {conversation.isSpeaking ? "(Speaking)" : ""}
                 </span>
               </div>
 
@@ -264,7 +277,7 @@ export function VoiceTab() {
               {conversationStatus === "connected" && (
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-2">
                   <div className="text-sm text-gray-700 dark:text-gray-300 text-center">
-                    Conversational AI feature is available with ElevenLabs Conversational AI agents.
+                    Conversational AI is active. Speak clearly into your microphone.
                   </div>
                 </div>
               )}
