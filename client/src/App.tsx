@@ -212,8 +212,8 @@ function App() {
   };
 
   const suggestions = [
+    "¿Quién ha desarrollado esta aplicación?",
     "Explica la computación cuántica en términos simples",
-    "Escribe una función en Python para ordenar una lista",
     "¿Cuáles son las mejores prácticas para el desarrollo en React?",
     "¿Cuál es el clima en Tokio?",
   ];
