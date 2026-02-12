@@ -17,6 +17,8 @@ function App() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showSearchView, setShowSearchView] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
 
@@ -66,6 +68,31 @@ function App() {
   const handleDeleteConversation = (conversationId: string) => {
     deleteConversation(conversationId);
   };
+
+  const handleSearchClick = () => {
+    setShowSearchView(!showSearchView);
+    if (!showSearchView) {
+      setSearchQuery("");
+    }
+  };
+
+  const handleCloseSearch = () => {
+    if (showSearchView) {
+      setShowSearchView(false);
+      setSearchQuery("");
+    }
+  };
+
+  const normalizeText = (text: string) => {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  };
+
+  const filteredConversations = conversations.filter((conv) =>
+    normalizeText(conv.title).includes(normalizeText(searchQuery))
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -233,6 +260,9 @@ function App() {
         currentConversationId={currentConversationId}
         onLoadConversation={handleLoadConversation}
         onDeleteConversation={handleDeleteConversation}
+        onSearchClick={handleSearchClick}
+        showSearchView={showSearchView}
+        onCloseSearch={handleCloseSearch}
       />
 
       {/* Main content area */}
@@ -246,7 +276,55 @@ function App() {
 
         {/* Chat content */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
-          {mode === "search" ? (
+          {showSearchView ? (
+            <div className="mx-auto max-w-4xl">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Buscar</h2>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar conversaciones..."
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all duration-200 mb-4"
+              />
+              <div className="overflow-y-auto max-h-[calc(100vh-250px)]">
+                {filteredConversations.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    {searchQuery ? "No se encontraron conversaciones" : "No hay conversaciones"}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {filteredConversations.map((conversation) => (
+                      <div
+                        key={conversation.id}
+                        className="group relative flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800/50"
+                      >
+                        <MessageSquare className="h-5 w-5 flex-shrink-0" />
+                        <button
+                          onClick={() => {
+                            handleLoadConversation(conversation.id);
+                            setShowSearchView(false);
+                          }}
+                          className="flex-1 text-left truncate"
+                          title={conversation.title}
+                        >
+                          <div className="font-medium">{conversation.title}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {new Date(conversation.updatedAt).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : mode === "search" ? (
             <SemanticSearch />
           ) : (
             <div className="mx-auto max-w-4xl">

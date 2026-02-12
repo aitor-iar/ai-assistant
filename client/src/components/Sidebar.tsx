@@ -15,6 +15,9 @@ interface Props {
   currentConversationId: string | null;
   onLoadConversation: (id: string) => void;
   onDeleteConversation: (id: string) => void;
+  onSearchClick: () => void;
+  showSearchView: boolean;
+  onCloseSearch: () => void;
 }
 
 export function Sidebar({
@@ -29,6 +32,9 @@ export function Sidebar({
   currentConversationId,
   onLoadConversation,
   onDeleteConversation,
+  onSearchClick,
+  showSearchView,
+  onCloseSearch,
 }: Props) {
   const [showSettings, setShowSettings] = useState(false);
   const [showFloatingSettings, setShowFloatingSettings] = useState(false);
@@ -39,6 +45,16 @@ export function Sidebar({
     } else {
       setShowSettings(!showSettings);
     }
+  };
+
+  const handleNewConversationClick = () => {
+    onCloseSearch();
+    onNewConversation();
+  };
+
+  const handleLoadConversationClick = (id: string) => {
+    onCloseSearch();
+    onLoadConversation(id);
   };
 
   const handleMenuToggle = () => {
@@ -72,10 +88,18 @@ export function Sidebar({
               {/* Botón de búsqueda - solo visible cuando el menú está desplegado */}
               {isOpen && (
                 <button
-                  className="flex items-center justify-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg"
-                  title="Buscar conversaciones"
+                  onClick={onSearchClick}
+                  disabled={showSearchView}
+                  className={`flex items-center justify-center px-4 py-3 transition-all rounded-lg ${
+                    "hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-105"
+                  }`}
+                  title={showSearchView ? "Búsqueda activa" : "Buscar conversaciones"}
                 >
-                  <Search className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                  <Search className={`h-5 w-5 ${
+                    showSearchView
+                      ? "text-gray-400 dark:text-gray-500"
+                      : "text-primary-600 dark:text-primary-400"
+                  }`} />
                 </button>
               )}
             </div>
@@ -84,7 +108,7 @@ export function Sidebar({
           {/* Botón de Nueva Conversación */}
           <div className="p-4">
             <button
-              onClick={onNewConversation}
+              onClick={handleNewConversationClick}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-lg"
             >
               <Plus className="h-5 w-5 text-primary-600 dark:text-primary-400  flex-shrink-0" />
@@ -117,7 +141,7 @@ export function Sidebar({
                         >
                           <MessageSquare className="h-4 w-4 flex-shrink-0" />
                           <button
-                            onClick={() => onLoadConversation(conversation.id)}
+                            onClick={() => handleLoadConversationClick(conversation.id)}
                             className="flex-1 text-left text-sm truncate"
                             title={conversation.title}
                           >
