@@ -9,9 +9,10 @@ interface Props {
   showImageUpload?: boolean;
   mode?: AppMode;
   onModeChange?: (mode: AppMode) => void;
+  onNewConversation?: () => void;
 }
 
-export function ChatInput({ onSend, onSearch, disabled, showImageUpload = false, mode = "chat", onModeChange }: Props) {
+export function ChatInput({ onSend, onSearch, disabled, showImageUpload = false, mode = "chat", onModeChange, onNewConversation }: Props) {
   const [input, setInput] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -94,10 +95,16 @@ export function ChatInput({ onSend, onSearch, disabled, showImageUpload = false,
 
   const handleModeToggle = () => {
     if (onModeChange) {
-      const newMode = mode === "chat" ? "search" : "chat";
-      onModeChange(newMode);
-      // Limpiar imagen si cambiamos a modo búsqueda
-      if (newMode === "search") {
+      if (mode === "search") {
+        // Si ya estamos en search, volver a chat con nueva conversación
+        onModeChange("chat");
+        if (onNewConversation) {
+          onNewConversation();
+        }
+      } else {
+        // Cambiar a search desde cualquier otro modo
+        onModeChange("search");
+        // Limpiar imagen si cambiamos a modo búsqueda
         setImagePreview(null);
         setImageBase64(null);
       }
@@ -106,13 +113,31 @@ export function ChatInput({ onSend, onSearch, disabled, showImageUpload = false,
 
   const handleTTSToggle = () => {
     if (onModeChange) {
-      onModeChange("tts");
+      if (mode === "tts") {
+        // Si ya estamos en TTS, volver a chat con nueva conversación
+        onModeChange("chat");
+        if (onNewConversation) {
+          onNewConversation();
+        }
+      } else {
+        // Cambiar a TTS desde cualquier otro modo
+        onModeChange("tts");
+      }
     }
   };
 
   const handleConversationalToggle = () => {
     if (onModeChange) {
-      onModeChange("conversational");
+      if (mode === "conversational") {
+        // Si ya estamos en conversational, volver a chat con nueva conversación
+        onModeChange("chat");
+        if (onNewConversation) {
+          onNewConversation();
+        }
+      } else {
+        // Cambiar a conversational desde cualquier otro modo
+        onModeChange("conversational");
+      }
     }
   };
 

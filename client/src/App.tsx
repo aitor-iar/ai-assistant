@@ -3,7 +3,6 @@ import { ChatMessage } from "./components/ChatMessage";
 import { ChatInput } from "./components/ChatInput";
 import { Sidebar } from "./components/Sidebar";
 import { SemanticSearch } from "./components/SemanticSearch";
-import { VoiceSelector } from "./components/VoiceSelector";
 import { ConversationalAI } from "./components/ConversationalAI";
 import { ChatMessage as ChatMessageType, AppMode, MessageContent } from "./types";
 import { useTheme } from "./utils/theme";
@@ -13,7 +12,8 @@ import { useAutoSave } from "./hooks/useAutoSave";
 
 function App() {
   const [mode, setMode] = useState<AppMode>("chat");
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("IKne3meq5aSn9XLyUdCD"); // Roger - Laid-Back, Casual, Resonant
+  // Voz predeterminada: Roger - Laid-Back, Casual, Resonant
+  const selectedVoiceId = "IKne3meq5aSn9XLyUdCD";
   const [systemPrompt, setSystemPrompt] = useState(() => {
     const saved = localStorage.getItem("systemPrompt");
     return saved || "";
@@ -54,11 +54,28 @@ function App() {
     localStorage.setItem("systemPrompt", systemPrompt);
   }, [systemPrompt]);
 
+  // Cargar voces disponibles desde el API
+  useEffect(() => {
+    const fetchVoices = async () => {
+      try {
+        const response = await fetch("http://localhost:3002/api/voices");
+        if (response.ok) {
+          const voices = await response.json();
+          console.log("Voces disponibles cargadas:", voices);
+        }
+      } catch (error) {
+        console.error("Error cargando voces:", error);
+      }
+    };
+    fetchVoices();
+  }, []);
+
   const handleNewConversation = () => {
     if (currentConversationId && currentMessages.length > 0) {
       saveConversation(currentConversationId, currentMessages);
     }
     createConversation();
+    setMode("chat");
   };
 
   const handleLoadConversation = (conversationId: string) => {
@@ -66,6 +83,7 @@ function App() {
       saveConversation(currentConversationId, currentMessages);
     }
     loadConversation(conversationId);
+    setMode("chat");
   };
 
   const handleDeleteConversation = (conversationId: string) => {
@@ -465,16 +483,10 @@ function App() {
             showImageUpload={mode === "chat"}
             mode={mode}
             onModeChange={setMode}
+            onNewConversation={handleNewConversation}
           />
         )}
 
-        {/* Voice Selector - Only visible in TTS mode */}
-        {mode === "tts" && (
-          <VoiceSelector 
-            selectedVoiceId={selectedVoiceId}
-            onVoiceChange={setSelectedVoiceId}
-          />
-        )}
       </div>
     </div>
   );
