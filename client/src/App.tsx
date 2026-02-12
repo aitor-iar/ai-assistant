@@ -4,6 +4,7 @@ import { ChatInput } from "./components/ChatInput";
 import { Sidebar } from "./components/Sidebar";
 import { SemanticSearch } from "./components/SemanticSearch";
 import { VoiceTab } from "./components/VoiceTab";
+import { ModeSelector } from "./components/ModeSelector";
 import { ChatMessage as ChatMessageType, AppMode, MessageContent } from "./types";
 import { useTheme } from "./utils/theme";
 import { MessageSquare } from "lucide-react";
@@ -281,6 +282,9 @@ function App() {
             Assistant AI
           </h1>
         </div>
+
+        {/* Mode Selector */}
+        <ModeSelector mode={mode} onModeChange={setMode} />
 
         {/* Chat content */}
         <div className={`flex-1 p-3 sm:p-4 md:p-6 ${showSearchView ? 'overflow-hidden' : 'overflow-y-auto'}`}>
