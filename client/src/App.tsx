@@ -275,18 +275,18 @@ function App() {
         </div>
 
         {/* Chat content */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+        <div className={`flex-1 p-3 sm:p-4 md:p-6 ${showSearchView ? 'overflow-hidden' : 'overflow-y-auto'}`}>
           {showSearchView ? (
-            <div className="mx-auto max-w-4xl">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Buscar</h2>
+            <div className="mx-auto max-w-4xl h-full flex flex-col">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex-shrink-0">Buscar</h2>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar conversaciones..."
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all duration-200 mb-4"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all duration-200 mb-4 flex-shrink-0"
               />
-              <div className="overflow-y-auto max-h-[calc(100vh-250px)]">
+              <div className="overflow-y-auto flex-1 scrollbar-hide">
                 {filteredConversations.length === 0 ? (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     {searchQuery ? "No se encontraron conversaciones" : "No hay conversaciones"}

@@ -91,7 +91,7 @@ export function Sidebar({
                   onClick={onSearchClick}
                   disabled={showSearchView}
                   className={`flex items-center justify-center px-4 py-3 transition-all rounded-lg ${
-                    "hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-105"
+                    !showSearchView&&"hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-105"
                   }`}
                   title={showSearchView ? "Búsqueda activa" : "Buscar conversaciones"}
                 >

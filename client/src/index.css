@@ -128,6 +128,16 @@
   @apply rounded-full bg-muted-foreground/20;
 }
 
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Hide scrollbar on mobile for horizontal scroll areas but keep functionality */
 @media (max-width: 640px) {
   .scrollbar-thin {
