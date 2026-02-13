@@ -7,7 +7,7 @@ import { ConversationalAI } from "./components/ConversationalAI";
 import { TTSAudioList } from "./components/TTSAudioList";
 import { ChatMessage as ChatMessageType, AppMode, MessageContent, TTSAudio } from "./types";
 import { useTheme } from "./utils/theme";
-import { MessageSquare, Volume2 } from "lucide-react";
+import { MessageSquare, Volume2, Mic, Trash2 } from "lucide-react";  // Added Mic import
 import { useConversations } from "./hooks/useConversations";
 import { useAutoSave } from "./hooks/useAutoSave";
 
@@ -440,33 +440,58 @@ function App() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {filteredConversations.map((conversation) => (
-                      <div
-                        key={conversation.id}
-                        className="group relative flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800/50"
-                      >
-                        <MessageSquare className="h-5 w-5 flex-shrink-0" />
-                        <button
-                          onClick={() => {
-                            handleLoadConversation(conversation.id);
-                            setShowSearchView(false);
-                          }}
-                          className="flex-1 text-left truncate"
-                          title={conversation.title}
+                    {filteredConversations.map((conversation) => {
+                      // Determine the icon based on conversation content
+                      const hasMessages = conversation.messages && conversation.messages.length > 0;
+                      const hasTTSAudios = conversation.ttsHistory && conversation.ttsHistory.length > 0;
+                      const hasConversationalAudio = hasTTSAudios && conversation.ttsHistory?.some(
+                        audio => audio.voiceId === "conversational-ai"
+                      );
+                      
+                      let IconComponent;
+                      if (hasConversationalAudio) {
+                        IconComponent = Mic;
+                      } else if (hasTTSAudios && !hasMessages) {
+                        IconComponent = Volume2;
+                      } else {
+                        IconComponent = MessageSquare;
+                      }
+
+                      return (
+                        <div
+                          key={conversation.id}
+                          className="group relative flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800/50"
                         >
-                          <div className="font-medium">{conversation.title}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {new Date(conversation.updatedAt).toLocaleDateString('es-ES', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </div>
-                        </button>
-                      </div>
-                    ))}
+                          <IconComponent className="h-5 w-5 flex-shrink-0" />  {/* Dynamic icon */}
+                          <button
+                            onClick={() => {
+                              handleLoadConversation(conversation.id);
+                              setShowSearchView(false);
+                            }}
+                            className="flex-1 text-left truncate"
+                            title={conversation.title}
+                          >
+                            <div className="font-medium">{conversation.title}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {new Date(conversation.updatedAt).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteConversation(conversation.id)}
+                            className="text-blue-500"
+                            title="Eliminar conversación"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
