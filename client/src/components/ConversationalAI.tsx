@@ -226,9 +226,9 @@ export function ConversationalAI({
 
         <div className="p-4 sm:p-6 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
           <div className="space-y-4 sm:space-y-6">
-            <div className="flex items-center justify-center gap-4 py-3">
+            <div className="flex items-center justify-center gap-3 py-2">
               <div
-                className={`w-4 h-4 rounded-full transition-all ${
+                className={`w-3 h-3 rounded-full transition-all ${
                   conversationStatus === "connected"
                     ? "bg-primary-500 shadow-lg shadow-primary-500/50"
                     : conversationStatus === "connecting"
@@ -236,7 +236,7 @@ export function ConversationalAI({
                     : "bg-gray-300 dark:bg-gray-700"
                 }`}
               />
-              <span className="text-base font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {conversationStatus === "connected"
                   ? "Conectado"
                   : conversationStatus === "connecting"
@@ -269,7 +269,7 @@ export function ConversationalAI({
               </div>
             )}
 
-            <div className="flex flex-col items-center justify-center gap-6 py-16 sm:py-20">
+            <div className="flex flex-col items-center gap-4 py-6 sm:py-8">
               {conversationStatus === "connected" ? (
                 <button
                   onClick={handleStopConversation}

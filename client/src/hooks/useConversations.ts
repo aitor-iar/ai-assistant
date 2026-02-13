@@ -166,11 +166,12 @@ export function useConversations(): {
           window.dispatchEvent(new CustomEvent("forceChatMode"));
         }
 
+        // Buscar solo la siguiente conversación con mensajes o audios
         const nextConversation = updated.find(conv => {
           const hasMessages = conv.messages && conv.messages.length > 0;
           const hasTTSAudios = conv.ttsHistory && conv.ttsHistory.length > 0;
           return hasMessages || hasTTSAudios;
-        }) || updated[0];
+        });
 
         if (nextConversation) {
           setCurrentConversationId(nextConversation.id);
