@@ -5,11 +5,13 @@ import { Sidebar } from "./components/Sidebar";
 import { SemanticSearch } from "./components/SemanticSearch";
 import { ConversationalAI } from "./components/ConversationalAI";
 import { TTSAudioList } from "./components/TTSAudioList";
-import { ChatMessage as ChatMessageType, AppMode, MessageContent, TTSAudio } from "./types";
+import { AuthScreen } from "./components/AuthScreen";
+import { ProfileView } from "./components/ProfileView";
+import { ChatMessage as ChatMessageType, AppMode, MessageContent, TTSAudio, Conversation } from "./types";
 import { useTheme } from "./utils/theme";
-import { MessageSquare, Volume2, Mic, Trash2 } from "lucide-react";  // Added Mic import
+import { MessageSquare, Volume2, Mic, Trash2, UserCircle2 } from "lucide-react";
 import { useConversations } from "./hooks/useConversations";
-import { useAutoSave } from "./hooks/useAutoSave";
+import { useAuth } from "./context/AuthProvider";
 
 function App() {
     useEffect(() => {
@@ -28,8 +30,10 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showSearchView, setShowSearchView] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [view, setView] = useState<"chat" | "profile">("chat");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
+  const { user, loading: authLoading } = useAuth();
 
   const {
     conversations,
@@ -55,20 +59,6 @@ function App() {
     updateConversationTitle(id, newTitle.trim());
   };
 
-  const handleAutoSave = useAutoSave({
-    delay: 1000,
-    onSave: () => {
-      if (currentConversationId && currentMessages.length > 0) {
-        saveConversation(currentConversationId, currentMessages);
-      }
-    },
-    enabled: currentMessages.length > 0,
-  });
-
-  useEffect(() => {
-    handleAutoSave();
-  }, [currentMessages, handleAutoSave]);
-
   useEffect(() => {
     localStorage.setItem("systemPrompt", systemPrompt);
   }, [systemPrompt]);
@@ -77,7 +67,7 @@ function App() {
   useEffect(() => {
     const fetchVoices = async () => {
       try {
-        const response = await fetch("http://localhost:3002/api/voices");
+        const response = await fetch("/api/voices");
         if (response.ok) {
           await response.json();
         }
@@ -106,14 +96,14 @@ function App() {
     handleCloseSearch();
     
     // Determinar el modo basado en el tipo de conversación
-    const conversation = conversations.find(c => c.id === conversationId);
+    const conversation = conversations.find((c: Conversation) => c.id === conversationId);
     if (conversation) {
       const hasTTSAudios = conversation.ttsHistory && conversation.ttsHistory.length > 0;
       const hasMessages = conversation.messages && conversation.messages.length > 0;
       
       // Si tiene audios de conversational-ai, es una conversación de voz (mostrar ambos)
       const hasConversationalAudio = hasTTSAudios && conversation.ttsHistory?.some(
-        audio => audio.voiceId === "conversational-ai"
+        (audio: TTSAudio) => audio.voiceId === "conversational-ai"
       );
       
       if (hasConversationalAudio) {
@@ -154,7 +144,7 @@ function App() {
       .replace(/[\u0300-\u036f]/g, '');
   };
 
-  const filteredConversations = conversations.filter((conv) => {
+  const filteredConversations = conversations.filter((conv: Conversation) => {
     // Filtrar solo conversaciones con contenido
     const hasMessages = conv.messages && conv.messages.length > 0;
     const hasTTSAudios = conv.ttsHistory && conv.ttsHistory.length > 0;
@@ -164,7 +154,7 @@ function App() {
     const titleMatch = normalizeText(conv.title).includes(normalizeText(searchQuery));
     
     // Buscar también en los textos de los audios TTS
-    const audioMatch = conv.ttsHistory?.some(audio => 
+    const audioMatch = conv.ttsHistory?.some((audio: TTSAudio) => 
       normalizeText(audio.text).includes(normalizeText(searchQuery))
     ) || false;
     
@@ -193,7 +183,7 @@ function App() {
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3002/api/speak", {
+      const response = await fetch("/api/speak", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -267,6 +257,7 @@ function App() {
 
     const updatedMessages = [...currentMessages, userMessage];
     updateCurrentMessages(updatedMessages);
+    addChatMessage(userMessage, conversationId);
     setIsLoading(true);
 
     const assistantMessageId = crypto.randomUUID();
@@ -278,6 +269,7 @@ function App() {
     };
 
     updateCurrentMessages([...updatedMessages, assistantMessage]);
+    addChatMessage(assistantMessage, conversationId);
 
     try {
       const apiMessages = updatedMessages.map(({ role, content }) => ({
@@ -309,6 +301,7 @@ function App() {
       }
 
       let toolWasUsed = false;
+      let assistantContent = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -336,14 +329,13 @@ function App() {
               }
               
               if (parsed.content) {
+                assistantContent += parsed.content;
                 updateCurrentMessages((prev: ChatMessageType[]) =>
                   prev.map((msg: ChatMessageType) =>
                     msg.id === assistantMessageId
                       ? { 
                           ...msg, 
-                          content: typeof msg.content === 'string' 
-                            ? msg.content + parsed.content 
-                            : parsed.content,
+                          content: assistantContent,
                           toolUsed: toolWasUsed 
                         }
                       : msg
@@ -356,8 +348,23 @@ function App() {
           }
         }
       }
+
+      const finalAssistantMessage: ChatMessageType = {
+        ...assistantMessage,
+        content: assistantContent,
+        toolUsed: toolWasUsed,
+      };
+
+      const finalMessages = [...updatedMessages, finalAssistantMessage];
+      updateCurrentMessages(finalMessages);
+      saveConversation(conversationId, finalMessages);
     } catch (error) {
       console.error("Failed to send message:", error);
+      const finalMessages = [...updatedMessages, {
+        ...assistantMessage,
+        content: "Sorry, there was an error processing your request. Please try again.",
+      }];
+      saveConversation(conversationId, finalMessages);
       updateCurrentMessages((prev: ChatMessageType[]) =>
         prev.map((msg: ChatMessageType) =>
           msg.id === assistantMessageId
@@ -391,6 +398,19 @@ function App() {
     "¿Cuál es el clima en Tokio?",
   ];
 
+  if (authLoading) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 gap-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <span className="text-sm text-gray-500 dark:text-gray-400">Cargando...</span>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen />;
+  }
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Sidebar */}
@@ -416,12 +436,22 @@ function App() {
       <div className="flex flex-col flex-1 min-w-0">
         {/* Header */}
         <div className="bg-white dark:bg-gray-900 px-3 sm:px-4 py-2 sm:py-3 flex items-center gap-3">
+          <button
+            onClick={() => setView("profile")}
+            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="Perfil"
+          >
+            <UserCircle2 className="h-6 w-6 text-gray-700 dark:text-gray-200" />
+          </button>
           <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
             Assistant AI
           </h1>
         </div>
 
         {/* Chat content */}
+        {view === "profile" ? (
+          <ProfileView onBack={() => setView("chat")} />
+        ) : (
         <div className={`flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto ${mode === 'tts' ? 'scrollbar-hide' : ''} ${showSearchView ? '!overflow-hidden' : ''}`}>
           {showSearchView ? (
             <div className="mx-auto max-w-4xl h-full flex flex-col">
@@ -440,12 +470,12 @@ function App() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {filteredConversations.map((conversation) => {
+                    {filteredConversations.map((conversation: Conversation) => {
                       // Determine the icon based on conversation content
                       const hasMessages = conversation.messages && conversation.messages.length > 0;
                       const hasTTSAudios = conversation.ttsHistory && conversation.ttsHistory.length > 0;
                       const hasConversationalAudio = hasTTSAudios && conversation.ttsHistory?.some(
-                        audio => audio.voiceId === "conversational-ai"
+                        (audio: TTSAudio) => audio.voiceId === "conversational-ai"
                       );
                       
                       let IconComponent;
@@ -585,14 +615,14 @@ function App() {
               ) : (
                 <>
                   {/* Mostrar audios de conversational-ai si existen */}
-                  {currentTTSHistory.some(audio => audio.voiceId === "conversational-ai") && (
+                  {currentTTSHistory.some((audio: TTSAudio) => audio.voiceId === "conversational-ai") && (
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <Volume2 className="h-5 w-5" />
                         Audio de la Conversación
                       </h3>
                       <TTSAudioList 
-                        audios={currentTTSHistory.filter(audio => audio.voiceId === "conversational-ai")}
+                        audios={currentTTSHistory.filter((audio: TTSAudio) => audio.voiceId === "conversational-ai")}
                         onDelete={deleteTTSAudio}
                       />
                     </div>
@@ -604,7 +634,7 @@ function App() {
                       <MessageSquare className="h-5 w-5" />
                       Chat
                     </h3>
-                    {currentMessages.map((message) => (
+                    {currentMessages.map((message: ChatMessageType) => (
                       <ChatMessage key={message.id} message={message} theme={theme} />
                     ))}
                   </div>
@@ -614,9 +644,10 @@ function App() {
             </div>
           )}
         </div>
+        )}
 
         {/* Chat Input */}
-        {!showSearchView && mode !== "conversational" && (
+        {view === "chat" && !showSearchView && mode !== "conversational" && (
           <ChatInput 
             onSend={mode === "tts" ? handleTTSGenerate : handleSendMessage}
             onSearch={handleSemanticSearch}

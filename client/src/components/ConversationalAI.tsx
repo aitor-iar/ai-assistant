@@ -52,7 +52,7 @@ export function ConversationalAI({
           }
           
           try {
-            const response = await fetch(`http://localhost:3002/api/conversation-audio/${elevenLabsConvId}`);
+            const response = await fetch(`/api/conversation-audio/${elevenLabsConvId}`);
             
             if (response.ok) {
               const contentType = response.headers.get('content-type');
@@ -148,7 +148,7 @@ export function ConversationalAI({
   useEffect(() => {
     const fetchAgentId = async () => {
       try {
-        const response = await fetch("http://localhost:3002/api/conversation-signature");
+        const response = await fetch("/api/conversation-signature");
         if (response.ok) {
           const data = await response.json();
           setAgentId(data.agentId);
@@ -253,13 +253,13 @@ export function ConversationalAI({
                   <div
                     key={idx}
                     className={`p-3 rounded-lg ${
-                      msg.role === 'user' || msg.role === 'user'
+                      msg.role === 'user'
                         ? 'bg-primary-50 dark:bg-primary-900/20 ml-8'
                         : 'bg-gray-50 dark:bg-gray-700/50 mr-8'
                     }`}
                   >
                     <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-                      {msg.role === 'user' || msg.role === 'user' ? 'Tú' : 'Agente'}
+                      {msg.role === 'user' ? 'Tú' : 'Agente'}
                     </div>
                     <div className="text-sm text-gray-900 dark:text-gray-100">
                       {msg.message}
