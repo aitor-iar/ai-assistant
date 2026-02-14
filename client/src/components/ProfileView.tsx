@@ -1,11 +1,11 @@
 import { useAuth } from "../context/AuthProvider";
-import { ArrowLeft, LogOut, Mail, Calendar } from "lucide-react";
+import { LogOut, Mail, Calendar } from "lucide-react";
 
 interface ProfileViewProps {
   onBack: () => void;
 }
 
-export function ProfileView({ onBack }: ProfileViewProps) {
+export function ProfileView({ }: ProfileViewProps) {
   const { user, signOut } = useAuth();
 
   const createdAt = user?.created_at
@@ -18,13 +18,6 @@ export function ProfileView({ onBack }: ProfileViewProps) {
 
   return (
     <div className="mx-auto w-full max-w-2xl p-4 sm:p-6">
-      <button
-        onClick={onBack}
-        className="mb-4 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-      >
-        <ArrowLeft size={16} />
-        Volver al chat
-      </button>
 
       <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Perfil</h2>
@@ -52,7 +45,7 @@ export function ProfileView({ onBack }: ProfileViewProps) {
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={() => void signOut()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg dark:text-primary-400 font-medium transition-colors"
           >
             <LogOut size={16} />
             Cerrar sesión

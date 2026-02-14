@@ -85,7 +85,7 @@ export function AuthScreen() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2.5 rounded-lg bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-medium transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-lg bg-primary-800 hover:bg-primary-700 disabled:bg-primary-400 text-white font-medium transition-colors flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>
