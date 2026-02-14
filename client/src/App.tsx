@@ -411,6 +411,12 @@ function App() {
     "¿Cuál es el clima en Tokio?",
   ];
 
+  // Filtrar los audios de conversación
+  const conversationalAudioList = currentTTSHistory.filter(
+    (audio: TTSAudio) => audio.voiceId === "conversational-ai"
+  );
+  const isConversationalHistory = conversationalAudioList.length > 0;
+
   if (authLoading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 gap-3">
@@ -632,19 +638,6 @@ function App() {
                 </div>
               ) : (
                 <>
-                  {/* Mostrar audios de conversational-ai si existen */}
-                  {currentTTSHistory.some((audio: TTSAudio) => audio.voiceId === "conversational-ai") && (
-                    <div className="mb-6">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                        <Volume2 className="h-5 w-5" />
-                        Audio de la Conversación
-                      </h3>
-                      <TTSAudioList 
-                        audios={currentTTSHistory.filter((audio: TTSAudio) => audio.voiceId === "conversational-ai")}
-                        onDelete={deleteTTSAudio}
-                      />
-                    </div>
-                  )}
                   
                   {/* Mostrar mensajes */}
                   <div className="space-y-3 sm:space-y-4">
@@ -664,17 +657,32 @@ function App() {
         </div>
         )}
 
-        {/* Chat Input */}
+        {/* Footer Area: Chat Input OR Audio Player */}
         {view === "chat" && !showSearchView && mode !== "conversational" && (
-          <ChatInput 
-            onSend={mode === "tts" ? handleTTSGenerate : handleSendMessage}
-            onSearch={handleSemanticSearch}
-            disabled={isLoading || !isInitialized} 
-            showImageUpload={mode === "chat"}
-            mode={mode}
-            onModeChange={setMode}
-            onNewConversation={handleNewConversation}
-          />
+          isConversationalHistory ? (
+            <div className="bg-white dark:bg-gray-900 p-3 sm:p-4 border-t border-gray-200 dark:border-gray-800 transition-colors duration-200">
+              <div className="max-w-4xl mx-auto">
+                <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-2 uppercase tracking-wider">
+                  <Volume2 className="h-4 w-4" />
+                  Audio de la Conversación
+                </h3>
+                <TTSAudioList 
+                  audios={conversationalAudioList}
+                  onDelete={deleteTTSAudio}
+                />
+              </div>
+            </div>
+          ) : (
+            <ChatInput 
+              onSend={mode === "tts" ? handleTTSGenerate : handleSendMessage}
+              onSearch={handleSemanticSearch}
+              disabled={isLoading || !isInitialized} 
+              showImageUpload={mode === "chat"}
+              mode={mode}
+              onModeChange={setMode}
+              onNewConversation={handleNewConversation}
+            />
+          )
         )}
       </div>
     </div>
