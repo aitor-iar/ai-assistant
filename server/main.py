@@ -12,7 +12,7 @@ from typing import List, Dict, Any, Union
 from contextlib import asynccontextmanager
 
 # Load environment variables (robust path handling)
-env_path = Path(__file__).parent.parent / '.env'
+env_path = Path(__file__).parent / '.env'
 load_dotenv(dotenv_path=env_path, override=True)
 
 # Initialize OpenAI client 
@@ -71,7 +71,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
     allow_credentials=True,
-    allow_methods=["POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
 

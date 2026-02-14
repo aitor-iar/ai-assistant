@@ -139,22 +139,33 @@ export function Sidebar({
                             key={conversation.id}
                             className="relative group"
                           >
-                            <button
+                            <div
                               onClick={() => {
-                                // No cargar la conversación si estamos editando su título
                                 if (editTitleId === conversation.id) return;
-                                
+
                                 onLoadConversation(conversation.id);
                                 if (window.innerWidth < 768) {
                                   onToggleSidebar();
                                 }
                               }}
-                              className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between gap-2 ${
+                              className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center justify-between gap-2 cursor-pointer ${
                                 currentConversationId === conversation.id
                                   ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                   : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                               }`}
                               style={{ position: "relative" }}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault();
+                                  if (editTitleId === conversation.id) return;
+                                  onLoadConversation(conversation.id);
+                                  if (window.innerWidth < 768) {
+                                    onToggleSidebar();
+                                  }
+                                }
+                              }}
                             >
                               <div className="flex items-center gap-2 min-w-0 flex-1">
                                 {/* Icon that changes on hover: chat icon becomes edit icon */}
@@ -254,7 +265,7 @@ export function Sidebar({
                               >
                                 <Trash2 size={16} className="text-gray-600 dark:text-gray-400 hover:text-primary-600 hover:dark:text-primary-400 transition-colors" />
                               </button>
-                            </button>
+                            </div>
                           </div>
                         );
                       })}

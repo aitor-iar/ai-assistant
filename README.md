@@ -309,6 +309,33 @@ Health check endpoint.
 - Environment variables are loaded from the root `.env` file
 - The frontend proxies API requests to the backend via Vite's proxy configuration
 
+## Supabase Migration Plan
+
+📖 **Ver [supabase/DATABASE.md](supabase/DATABASE.md) para documentación completa de la base de datos**
+
+### Quick Setup
+
+1. Create a Supabase project and copy `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` into `client/.env`.
+2. Run the SQL in `supabase/schema.sql` from Supabase SQL Editor.
+   - **Nota:** La tabla `auth.users` es gestionada automáticamente por Supabase
+   - Solo necesitas ejecutar el schema para crear `profiles`, `conversations`, `messages`, `tts_audios`
+3. Enable Email/Password auth in Supabase Authentication settings.
+4. Start app and verify auth flow in `client/src/components/AuthScreen.tsx` (sign up / login).
+5. Verify protected app shell in `client/src/App.tsx` (unauthenticated users only see auth screen).
+6. Verify profile/logout view in `client/src/components/ProfileView.tsx`.
+7. Confirm persistence in `client/src/hooks/useConversations.ts`:
+  - conversations and messages load from Supabase on login
+  - user and assistant messages persist when sent/streamed
+  - TTS/conversational audio entries persist in `tts_audios`
+8. Validate RLS by logging in with two users and confirming each can only read/write their own rows.
+
+### 🔐 About Authentication
+
+- **`auth.users`** (email, password, etc.) is **managed automatically by Supabase**
+- **`public.profiles`** is synced automatically via trigger when users sign up
+- Passwords are encrypted by Supabase - never accessible directly
+- RLS policies ensure users only access their own data
+
 ## License
 
 MIT
