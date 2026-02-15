@@ -25,12 +25,14 @@ export function ConversationalAI({
   const conversationIdRef = useRef<string | null>(null);
   const elevenLabsConversationIdRef = useRef<string | null>(null);
   const conversationStartTimeRef = useRef<number | null>(null);
+  const messagesCountRef = useRef<number>(0);
   const [conversationMessages, setConversationMessages] = useState<Array<{role: string, message: string}>>([]);
   
   // Hook oficial de ElevenLabs para gestionar la conversación
   const conversation = useConversation({
     onConnect: () => {
       conversationStartTimeRef.current = Date.now();
+      messagesCountRef.current = 0;
     },
     onDisconnect: () => {
       
@@ -81,6 +83,18 @@ export function ConversationalAI({
                 voiceName: "ElevenLabs Agent",
               };
               
+              // Fallback: Si no hubo mensajes de texto en tiempo real, usar la transcripción como mensaje
+              // Esto suele pasar si el usuario solo escucha el saludo y corta.
+              if (messagesCountRef.current === 0 && transcription && convId) {
+                const chatMessage = {
+                  id: crypto.randomUUID(),
+                  role: 'assistant' as const,
+                  content: transcription,
+                  timestamp: new Date().toISOString(),
+                };
+                addChatMessage(chatMessage, convId);
+              }
+
               addTTSAudio(audioEntry, convId);
               } else {
                 setTimeout(() => tryFetchAudio(attempts + 1, maxAttempts), 3000);
@@ -107,6 +121,7 @@ export function ConversationalAI({
         const content = msgObj.message || msgObj.text || '';
         
         if (content && conversationIdRef.current) {
+          messagesCountRef.current += 1;
           const chatMessage = {
             id: crypto.randomUUID(),
             role: (role === 'agent' ? 'assistant' : 'user') as 'user' | 'assistant',
