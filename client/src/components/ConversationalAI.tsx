@@ -1,11 +1,9 @@
 
 import { useState, useEffect, useRef } from "react";
-import { Mic, Square, Circle, Loader2 } from "lucide-react";
+import { Mic, Square, Loader2 } from "lucide-react";
 import { useConversation } from "@elevenlabs/react";
 import { ChatMessage, TTSAudio } from "../types";
 import { Button } from "./ui/Button";
-import { Card, CardContent } from "./ui/Card";
-import { ScrollArea } from "./ui/ScrollArea";
 import { cn } from "../lib/utils";
 
 interface ConversationalAIProps {
@@ -13,6 +11,7 @@ interface ConversationalAIProps {
   createConversation: () => string;
   loadConversation: (id: string) => void;
   addChatMessage: (message: ChatMessage, conversationId?: string) => void;
+  updateConversationTitle: (id: string, newTitle: string) => void;
 }
 
 export function ConversationalAI({
@@ -20,13 +19,14 @@ export function ConversationalAI({
   createConversation,
   loadConversation,
   addChatMessage,
+  updateConversationTitle,
 }: ConversationalAIProps) {
   const [agentId, setAgentId] = useState<string>("");
   const conversationIdRef = useRef<string | null>(null);
   const elevenLabsConversationIdRef = useRef<string | null>(null);
   const conversationStartTimeRef = useRef<number | null>(null);
   const messagesCountRef = useRef<number>(0);
-  const [conversationMessages, setConversationMessages] = useState<Array<{role: string, message: string}>>([]);
+  const [_conversationMessages, setConversationMessages] = useState<Array<{role: string, message: string}>>([]);
   
   // Hook oficial de ElevenLabs para gestionar la conversación
   const conversation = useConversation({
@@ -41,12 +41,16 @@ export function ConversationalAI({
         const duration = Math.floor((Date.now() - conversationStartTimeRef.current) / 1000);
         const convId = conversationIdRef.current;
         const elevenLabsConvId = elevenLabsConversationIdRef.current;
+
+        // Actualizar el título de la conversación en el historial
+        const durationString = `${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, '0')}`;
+        updateConversationTitle(convId, `Conversación - ${durationString}`);
         
         const tryFetchAudio = async (attempts = 0, maxAttempts = 5) => {
           if (!elevenLabsConvId || attempts >= maxAttempts) {
             addTTSAudio({
               id: crypto.randomUUID(),
-              text: `Conversación de voz - Duración: ${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, '0')} (sin audio)`,
+              text: `Conversación de voz - Duración: ${durationString} (sin audio)`,
               audioUrl: "",
               timestamp: Date.now(),
               voiceId: "conversational-ai",
@@ -76,16 +80,15 @@ export function ConversationalAI({
               
               const audioEntry = {
                 id: crypto.randomUUID(),
-                text: transcription || `Conversación de voz - Duración: ${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, '0')}`,
+                text: transcription || `Conversación de voz - Duración: ${durationString}`,
                 audioUrl: audioUrl,
                 timestamp: Date.now(),
                 voiceId: "conversational-ai",
                 voiceName: "ElevenLabs Agent",
               };
               
-              // Fallback: Si no hubo mensajes de texto en tiempo real, usar la transcripción como mensaje
-              // Esto suele pasar si el usuario solo escucha el saludo y corta.
-              if (messagesCountRef.current === 0 && transcription && convId) {
+              // Guardar la transcripción completa como mensaje en el historial
+              if (transcription && convId) {
                 const chatMessage = {
                   id: crypto.randomUUID(),
                   role: 'assistant' as const,
@@ -205,106 +208,85 @@ export function ConversationalAI({
   };
 
   const conversationStatus = conversation.status;
+  const isAiSpeaking = conversationStatus === "connected" && conversation.isSpeaking;
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6">
-      <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
-        <div className="text-center">
-          <div className="mb-3 sm:mb-4 inline-flex p-3 sm:p-4 rounded-full bg-gradient-to-br from-primary/10 to-accent/10">
-            <Mic className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-          </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
-            Conversational AI
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
-            Habla con tu agente ElevenLabs en tiempo real usando tu micrófono
-          </p>
-        </div>
-
-        <Card className="shadow-lg">
-          <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-            <div className="flex items-center justify-center gap-3 py-2">
-              <div
-                className={cn(
-                  "w-3 h-3 rounded-full transition-all",
-                  conversationStatus === "connected"
-                    ? "bg-primary shadow-lg shadow-primary/50"
-                    : conversationStatus === "connecting"
-                    ? "bg-primary/70 animate-pulse shadow-lg shadow-primary/30"
-                    : "bg-muted-foreground/30"
-                )}
-              />
-              <span className="text-sm font-medium text-muted-foreground">
-                {conversationStatus === "connected"
-                  ? "Conectado"
-                  : conversationStatus === "connecting"
-                  ? "Conectando..."
-                  : "Desconectado"}
-                {conversationStatus === "connected" && conversation.isSpeaking && " (Hablando)"}
-              </span>
-            </div>
-
-            {/* Mensajes de la conversación */}
-            {conversationMessages.length > 0 && (
-              <ScrollArea className="max-h-60 border-t border-border pt-4">
-                <div className="space-y-2">
-                  {conversationMessages.map((msg, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "p-3 rounded-lg",
-                        msg.role === 'user'
-                          ? 'bg-primary/10 ml-8'
-                          : 'bg-muted mr-8'
-                      )}
-                    >
-                      <div className="text-xs font-semibold text-muted-foreground mb-1">
-                        {msg.role === 'user' ? 'Tú' : 'Agente'}
-                      </div>
-                      <div className="text-sm text-foreground">
-                        {msg.message}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
-
-            <div className="flex flex-col items-center gap-4 py-6 sm:py-8">
-              {conversationStatus === "connected" ? (
-                <Button
-                  variant="destructive"
-                  onClick={handleStopConversation}
-                  className="w-28 h-28 sm:w-32 sm:h-32 min-h-[112px] min-w-[112px] rounded-full shadow-2xl hover:scale-105 active:scale-95"
-                  aria-label="Detener conversación"
-                >
-                  <Square size={40} className="sm:w-12 sm:h-12" fill="currentColor" />
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleStartConversation}
-                  disabled={conversationStatus === "connecting"}
-                  className="w-28 h-28 sm:w-32 sm:h-32 min-h-[112px] min-w-[112px] rounded-full shadow-2xl hover:scale-105 active:scale-95 disabled:hover:scale-100"
-                  aria-label="Iniciar conversación"
-                >
-                  {conversationStatus === "connecting" ? (
-                    <Loader2 className="animate-spin" size={40} />
-                  ) : (
-                    <Circle size={40} className="sm:w-12 sm:h-12" fill="currentColor" />
-                  )}
-                </Button>
-              )}
-              <p className="text-sm font-medium text-muted-foreground text-center">
-                {conversationStatus === "connected"
-                  ? "Conversación activa - Click para detener"
-                  : conversationStatus === "connecting"
-                  ? "Conectando con el agente..."
-                  : "Click para iniciar conversación"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="flex-1 flex flex-col items-center justify-center min-h-0 p-4">
+      {/* Status indicator */}
+      <div className="flex items-center gap-2.5 mb-10">
+        <div
+          className={cn(
+            "w-2.5 h-2.5 rounded-full transition-all duration-300",
+            conversationStatus === "connected"
+              ? "bg-primary shadow-lg shadow-primary/50"
+              : conversationStatus === "connecting"
+              ? "bg-primary/70 animate-pulse shadow-md shadow-primary/30"
+              : "bg-muted-foreground/30"
+          )}
+        />
+        <span className="text-sm font-medium text-muted-foreground tracking-wide">
+          {conversationStatus === "connected"
+            ? isAiSpeaking
+              ? "Hablando..."
+              : "Escuchando..."
+            : conversationStatus === "connecting"
+            ? "Conectando..."
+            : "Listo"}
+        </span>
       </div>
+
+      {/* Central button with pulse rings */}
+      <div className="relative flex items-center justify-center mb-10">
+        {/* Pulse rings — visible only when AI is speaking */}
+        {isAiSpeaking && (
+          <>
+            <span className="absolute inset-0 rounded-full bg-primary/20 animate-voice-pulse" />
+            <span className="absolute inset-0 rounded-full bg-primary/20 animate-voice-pulse animation-delay-300" />
+            <span className="absolute inset-0 rounded-full bg-primary/20 animate-voice-pulse animation-delay-600" />
+          </>
+        )}
+
+        {conversationStatus === "connected" ? (
+          <Button
+            onClick={handleStopConversation}
+            className={cn(
+              "relative z-10 w-56 h-56 sm:w-72 sm:h-72 min-h-[224px] min-w-[224px] rounded-full transition-all duration-300",
+              "shadow-2xl hover:scale-105 active:scale-95",
+              isAiSpeaking
+                ? "shadow-[0_0_80px_rgba(77,115,255,0.4)] ring-8 ring-primary/40"
+                : "ring-8 ring-primary/20 animate-pulse"
+            )}
+            aria-label="Detener conversación"
+          >
+            <Square size={80} className="sm:w-24 sm:h-24" fill="currentColor" />
+          </Button>
+        ) : (
+          <Button
+            onClick={handleStartConversation}
+            disabled={conversationStatus === "connecting"}
+            className={cn(
+              "relative z-10 w-56 h-56 sm:w-72 sm:h-72 min-h-[224px] min-w-[224px] rounded-full transition-all duration-300",
+              "shadow-2xl hover:scale-105 active:scale-95 disabled:hover:scale-100"
+            )}
+            aria-label="Iniciar conversación"
+          >
+            {conversationStatus === "connecting" ? (
+              <Loader2 className="animate-spin" size={80} />
+            ) : (
+              <Mic size={80} className="sm:w-24 sm:h-24" />
+            )}
+          </Button>
+        )}
+      </div>
+
+      {/* Instruction text */}
+      <p className="text-sm font-medium text-muted-foreground text-center max-w-xs">
+        {conversationStatus === "connected"
+          ? "Conversación activa — toca para detener"
+          : conversationStatus === "connecting"
+          ? "Conectando con el agente..."
+          : "Toca para iniciar conversación"}
+      </p>
     </div>
   );
 }

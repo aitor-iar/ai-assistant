@@ -484,7 +484,8 @@ function App() {
           <ProfileView onBack={() => setView("chat")} />
         ) : (
         <div className={cn(
-          "flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto",
+          "flex-1 p-3 sm:p-4 md:p-6",
+          mode === 'conversational' ? 'flex flex-col overflow-hidden p-0 sm:p-0 md:p-0' : 'overflow-y-auto',
           mode === 'tts' && 'scrollbar-hide',
           showSearchView && '!overflow-hidden'
         )}>
@@ -616,6 +617,7 @@ function App() {
               createConversation={createConversation}
               loadConversation={loadConversation}
               addChatMessage={addChatMessage}
+              updateConversationTitle={updateConversationTitle}
             />
           ) : mode === "search" ? (
             <SemanticSearch />
