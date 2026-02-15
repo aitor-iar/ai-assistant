@@ -99,7 +99,7 @@ export function ChatMessage({ message, theme = 'dark' }: Props) {
             {formatTime(message.timestamp)}
           </span>
           {message.toolUsed && (
-            <Badge className="text-xs gap-1 bg-primary text-white hover:bg-primary/90 border-none">
+            <Badge className="text-xs gap-1 bg-primary-600 hover:bg-primary-600 text-white border-none">
               <Wrench size={12} />
               Tool Used
             </Badge>

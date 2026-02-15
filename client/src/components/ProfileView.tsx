@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthProvider";
-import { LogOut, Mail, Calendar, User as UserIcon, Pencil, X, Loader2 } from "lucide-react";
+import { LogOut, Mail, Calendar, User as UserIcon, Pencil, Loader2 } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Card, CardContent } from "./ui/Card";
@@ -81,6 +81,7 @@ export function ProfileView({ }: ProfileViewProps) {
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                       onKeyDown={handleKeyDown}
+                      onBlur={handleCancel}
                       disabled={isSaving}
                       className="h-8 text-sm"
                       autoFocus
@@ -97,24 +98,13 @@ export function ProfileView({ }: ProfileViewProps) {
                 )}
               </div>
 
-              {/* Botones de control */}
               <div className="flex items-center gap-1 self-start mt-1">
                 {isEditing ? (
                   isSaving ? (
                     <div className="p-1.5">
                       <Loader2 size={16} className="animate-spin text-primary" />
                     </div>
-                  ) : (
-                    <Button 
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleCancel}
-                      className="h-7 w-7 min-h-[28px] min-w-[28px] text-muted-foreground hover:text-destructive"
-                      title="Cancelar (Esc)"
-                    >
-                      <X size={16} />
-                    </Button>
-                  )
+                  ) : null
                 ) : (
                   <Button 
                     variant="ghost"

@@ -186,7 +186,7 @@ export function Sidebar({
                                         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                                         aria-label="Editar nombre"
                                       >
-                                        <Pencil size={16} className="text-muted-foreground" />
+                                        <Pencil size={16} className="text-muted-foreground hover:text-primary transition-colors" />
                                       </button>
                                     </>
                                   ) : hasTTSAudios && !hasMessages ? (
@@ -201,7 +201,7 @@ export function Sidebar({
                                         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                                         aria-label="Editar nombre"
                                       >
-                                        <Pencil size={16} className="text-muted-foreground" />
+                                        <Pencil size={16} className="text-muted-foreground hover:text-primary transition-colors" />
                                       </button>
                                     </>
                                   ) : (
@@ -264,7 +264,7 @@ export function Sidebar({
                                   e.stopPropagation();
                                   onDeleteConversation(conversation.id);
                                 }}
-                                className="p-1 h-7 w-7 min-h-[28px] min-w-[28px] flex-shrink-0 opacity-60 hover:opacity-100 transition-all duration-200"
+                                className="p-1 h-7 w-7 min-h-[28px] min-w-[28px] flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200"
                                 aria-label="Eliminar"
                                 style={{ zIndex: 2 }}
                               >

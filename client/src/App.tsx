@@ -37,6 +37,24 @@ function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
   const { user, loading: authLoading } = useAuth();
+  
+  // Reset view to chat when user changes (login/logout)
+  // Reset view to chat ONLY when user logs in (or user ID changes)
+  // We use a ref to track if we already had a user, to avoid resetting on profile updates
+  const prevUserIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (user && user.id !== prevUserIdRef.current) {
+      // New user logged in (or first load with user)
+      setView("chat");
+      setMode("chat");
+      setShowSearchView(false);
+      prevUserIdRef.current = user.id;
+    } else if (!user) {
+      // User logged out
+      prevUserIdRef.current = null;
+    }
+  }, [user]);
 
   const {
     conversations,
